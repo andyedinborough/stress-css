@@ -173,22 +173,18 @@ var stressTest = (function () {
         var num = prompt('How many tests would you like to run (# stress tests per class)?', 5);
         if (num > 0) {
             stressTest(num, function (state) {
-                var spaces = '', log = '<table><thead><tr><th>Class</th><th> </th><th>Delta</th><th>Total</th></tr></thead>', all = Object_keys(state.results),
+                var log = '<table><thead><tr><th>Class</th><th> </th><th>Delta</th><th>Total</th></tr></thead>', 
+                    all = Object_keys(state.results),
                     worst = all.sort(function (a, b) {
                         return state.results[a].time - state.results[b].time;
-                    }).splice(0, 20);
+                    }).slice(0, 20);
 
                 forEach.call(worst, function (ii) {
-                    while (ii.length > spaces.length) spaces += ' ';
-                });
-
-                forEach.call(worst, function (ii) {
-                    log += '<tr><td>Removing .' + ii + spaces.substr(ii.length) +
-                        '</td><td>' + (state.results[ii].delta < 0 ? '<span style="color:red">saves</span>' : '<span style="color:green">adds</span>') +
+                    log += '<tr><td>Removing <strong>' + ii +
+                        '</strong></td><td>' + (state.results[ii].delta < 0 ? '<span style="color:red">saves</span>' : '<span style="color:green">adds</span>') +
                         '</td><td style="text-align:right">' + Math.abs(state.results[ii].delta) + 'ms</td><td style="text-align:right">' + state.results[ii].time + 'ms</td></tr>\n';
                 });
-
-                //alert('Baseline \t ' + state.baseTime + 'ms\n' + log);
+ 
                 var report = document.createElement('div'),
                     style = { position: 'fixed', top: '10px', right: '10px', 'font': '12px monospace', 'z-index': 999999999, background: 'white', padding: '2px', border: 'solid 2px #777' };
                 forEach.call(Object_keys(style), function (ii) { try { report.style.setProperty(ii, style[ii]); } catch(x) { } });
