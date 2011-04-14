@@ -6,5 +6,4 @@ It indexes all the elements and their classes, and then--class by class--it
 removes one, and times how long it takes to scroll the page.  Classes that 
 save a considerable amount of time when removed indicate problem areas.
 
-To install the bookmarklet, drag this link to your favorites: 
-  <a href="javascript:(function(d){var s=d.createElement('script');s.src='https://github.com/andyedinborough/stress-css/raw/master/stressTest.js';d.getElementsByTagName('script')[0].insertBefore(s);var doit=function(){if(window.stressTest){stressTest.bookmarklet();}else{setTimeout(doit,100);}};doit();})(document);">CSS Stress Test</a>
+To install the bookmarklet, visit my blog post on this project: http://andy.edinborough.org/CSS-Stress-Testing-and-Performance-Profiling
