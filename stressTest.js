@@ -193,8 +193,8 @@ var stressTest = (function () {
 
                 //alert('Baseline \t ' + state.baseTime + 'ms\n' + log);
                 var report = document.createElement('div'),
-                    style = { position: 'fixed', top: '10px', right: '10px', 'font': '12px monospace', 'z-index': 2147483647, background: 'white', padding: '2px', border: 'solid 2px #777' };
-                forEach.call(Object_keys(style), function (ii) { report.style.setProperty(ii, style[ii]); });
+                    style = { position: 'fixed', top: '10px', right: '10px', 'font': '12px monospace', 'z-index': 999999999, background: 'white', padding: '2px', border: 'solid 2px #777' };
+                forEach.call(Object_keys(style), function (ii) { try { report.style.setProperty(ii, style[ii]); } catch(x) { } });
                 report.innerHTML = log + '</table><p>Classes Tested: ' + all.length + '</p><p>Baseline Time: ' + state.baseTime + 'ms</p>';
                 forEach.call(report.getElementsByTagName('td'), function (td) { td.style.padding = '1px'; });
                 document.body.appendChild(report);
