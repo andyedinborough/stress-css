@@ -56,7 +56,7 @@ var stressTest = (function () {
     function bind(elm, name, func) {
         var parts = name.split('.');
         if (!elm.__events) elm.__events = {};
-        if (!elm.__events[name]) elm.events[name] = [];
+        if (!elm.__events[name]) elm.__events[name] = [];
         elm.__events[name].push(func);
         name = parts[0];
         if (elm.attachEvent) elm.attachEvent(name, func);
