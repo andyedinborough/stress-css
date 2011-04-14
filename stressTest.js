@@ -125,22 +125,19 @@ var stressTest = (function () {
     }
 
     function stress(state, times, finish) {
-        var total = 0,
-        n = 0, current = 0,
+        var  n = 0, now = +new Date;,
         work = function () {
-            current = +new Date;
             window.scrollBy(0, n % 2 == 0 ? 100 : -100);
         };
         times *= 2; //each test consists of scrolling down, and then back up
         
         bind(window, 'scroll.stressTest', function () {
-            total += (+new Date) - current;
             n++;
             if (n < times && !state.cancel) {
                 setTimeout(work, 0);
             } else {
                 unbind(window, 'scroll.stressTest');
-                finish.call(window, total);
+                finish.call(window, (+new Date) - now);
             }
         });
 
