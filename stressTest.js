@@ -53,7 +53,7 @@ var stressTest = (function () {
         });
     }
 
-    function (elm, name, func) {
+    function bind(elm, name, func) {
         var parts = name.split('.');
         if (!elm.__events) elm.__events = {};
         if (!elm.__events[name]) elm.events[name] = [];
