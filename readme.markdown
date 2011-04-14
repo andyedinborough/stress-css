@@ -6,4 +6,4 @@ It indexes all the elements and their classes, and then--class by class--it
 removes one, and times how long it takes to scroll the page.  Classes that 
 save a considerable amount of time when removed indicate problem areas.
 
-To install the bookmarklet, visit my blog post on this project: http://andy.edinborough.org/CSS-Stress-Testing-and-Performance-Profiling
+To install the bookmarklet, visit my blog post on this project: <http://andy.edinborough.org/CSS-Stress-Testing-and-Performance-Profiling>

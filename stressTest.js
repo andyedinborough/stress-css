@@ -132,7 +132,7 @@ var stressTest = (function () {
             window.scrollBy(0, n % 2 == 0 ? 100 : -100);
         };
         times *= 2; //each test consists of scrolling down, and then back up
-
+        
         bind(window, 'scroll.stressTest', function () {
             total += (+new Date) - current;
             n++;
@@ -165,6 +165,7 @@ var stressTest = (function () {
             if (e.keyCode == 27) state.cancel = true;
         });
 
+        window.scrollTo(0, 0); //the first test scrolls down
         /* just warming up */
         testClass(times, baselineName, state, function () {
             testClass(times, baselineName, state, testfinish);
