@@ -125,7 +125,7 @@ var stressTest = (function () {
     }
 
     function stress(state, times, finish) {
-        var  n = 0, now = +new Date;,
+        var  n = 0, now = +new Date;
         work = function () {
             window.scrollBy(0, n % 2 == 0 ? 100 : -100);
         };
