@@ -19,10 +19,16 @@ var stressTest = (function () {
         };
 
     function getChildren(elm) {
-        if (elm.length) {
-            var ret = [];
+        if (typeof elm.length != 'undefined') {
+            var all = [], ret = [], hash = {};
             forEach.call(elm, function (ii) {
-                Array.prototype.push.apply(ret, getChildren(ii));
+                Array.prototype.push.apply(all, Array.prototype.slice.call(getChildren(ii), 0));
+            });
+            forEach.call(all, function (ii) {
+                if (!hash[ii]) {
+                    hash[ii] = true;
+                    ret.push(ii);
+                }
             });
             return ret;
         }
