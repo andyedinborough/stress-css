@@ -166,17 +166,16 @@ var stressTest = (function () {
         var num = prompt('How many tests would you like to run?', 10);
         if (num > 0) {
             exports(num, function (results) {
-                var worst = Object_keys(results).sort(function (a, b) {
+                var log = '', worst = Object_keys(results).sort(function (a, b) {
                     return results[b] - results[a];
                 }).slice(0, 5);
-            });
 
-            var log = '';
-            forEach.call(worst, function (ii) {
-                log += ii + "\t" + results[ii].delta + 'ms\n';
-            });
+                forEach.call(worst, function (ii) {
+                    log += ii + "\t" + results[ii].delta + 'ms\n';
+                });
 
-            alert(log);
+                alert(log);
+            });
         }
     }
 
