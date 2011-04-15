@@ -52,7 +52,9 @@ var stressTest = (function () {
         if (typeof elm.length != 'undefined') {
             var all = []; //, ret = [], hash = {};
             forEach.call(elm, function (ii) {
-                Array.prototype.push.apply(all, Array.prototype.slice.call(getChildren(ii), 0));
+                forEach.call(getChildren(ii), function(ce){ 
+                  all.push(ce);
+                });
             });
           
             //need a way to make sure the list is distinct
