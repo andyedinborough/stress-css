@@ -17,6 +17,12 @@ var stressTest = (function () {
             if (func(ii)) ret.push(ii);
         });
         return ret;
+    }, indexOf = Array.prototype.indexOf || function(item){
+        for(var i = 0, ii = this.length; i<ii; i++){
+          if(this[i]===item)
+            return i;
+        }
+        return -1;
     };
     
     function style(elm, props){
@@ -52,7 +58,9 @@ var stressTest = (function () {
         if (typeof elm.length != 'undefined') {
             var all = []; //, ret = [], hash = {};
             forEach.call(elm, function (ii) {
-                Array.prototype.push.apply(all, Array.prototype.slice.call(getChildren(ii), 0));
+                forEach.call(getChildren(ii), function(ce){ 
+                  all.push(ce);
+                });
             });
           
             //need a way to make sure the list is distinct
@@ -73,7 +81,9 @@ var stressTest = (function () {
 
     function unbind(elm, name, func) {
         if (!func && elm.__events && elm.__events[name]) {
-            forEach.call(elm.__events[name].splice(0), function (ii) {
+            var evnts = elm.__events[name];
+            elm.__events[name] = [];
+            forEach.call(evnts, function (ii) {
                 unbind(elm, name, ii);
             });
         } else {
@@ -81,15 +91,16 @@ var stressTest = (function () {
             if (elm.detachEvent) elm.detachEvent('on' + name, func);
             else if (elm.removeEventListener) elm.removeEventListener(name, func, false);
             if (elm.__events && elm.__events[name]) {
-                var i = elm.__events[name].indexOf(func);
+                var i = indexOf.call(elm.__events[name], func);
                 if (i > -1) elm.__events[name].splice(i, 1);
             }
         }
         elm = null;
-    }
+    }  
 
     function removeClass(elms, className) {
         forEach.call(elms, function (ii) {
+            if(!ii) return;
             ii.className = distinct(
                     filter.call(
                         (ii.className || '').split(whitespace),
@@ -109,6 +120,7 @@ var stressTest = (function () {
 
     function addClass(elms, className) {
         forEach.call(elms, function (ii) {
+            if(!ii) return;
             var classes = (ii.className || '').split(' ');
             classes.push(className);
             ii.className = distinct(classes).join(' ');
@@ -153,15 +165,15 @@ var stressTest = (function () {
     }
 
     function stress(state, times, finish) {
-        var now = +new Date,
-          work = state.work || function () {
+        var now = +new Date, 
+          work = state.work || function () { 
               window.scrollBy(0, times % 2 == 0 ? 100 : -100);
           };
         times *= 2; //each test consists of scrolling down, and then back up
         
         bind(window, 'scroll.stressTest', function () {
-            if (--times && !state.cancel) {
-                setTimeout(work, 0);
+            if (--times > 0 && !state.cancel) {
+                setTimeout(work, 1);
             } else {
                 unbind(window, 'scroll.stressTest');
                 finish((+new Date) - now);
@@ -251,14 +263,28 @@ var stressTest = (function () {
         );                             
     }
 
+
+    stressTest.bind = bind;
+    stressTest.unbind = unbind;
     stressTest.bookmarklet = function () {
         if(stressTest.report) stressTest.report.close();
         
         var num = prompt('How many tests would you like to run (# stress tests per selector)?', 5);
         if (num > 0) {
             var  reportHolder = document.createElement('div'),
-            report = document.createElement('div'),
-            close = document.createElement('a');
+              report = document.createElement('div'),
+              close = document.createElement('a'), 
+              state = { 
+                times: num, 
+                finish: function(){ 
+                  if(this.cancel) reportHolder.close();
+                  else showReport(this, report); 
+                },
+                beforeTest: function(e) {
+                  report.innerHTML = 'Testing <strong>' + e.selector + 
+                    '</strong><br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
+                } 
+              };
             
             style(reportHolder, { 
               position: 'fixed', top: '10px', right: '10px', 
@@ -278,7 +304,8 @@ var stressTest = (function () {
             reportHolder.close = function(){
               reportHolder.parentNode.removeChild(reportHolder);
               unbind(close, 'click');
-              stressTest.report = null;                             
+              stressTest.report = null; 
+              state.cancel = true;                            
             };
             bind(close, 'click', reportHolder.close);
 
@@ -287,17 +314,7 @@ var stressTest = (function () {
             document.body.appendChild(reportHolder);
             stressTest.report = reportHolder;
                         
-            stressTest({ 
-              times: num, 
-              finish: function(){ 
-                if(this.cancel) reportHolder.close();
-                else showReport(this, report); 
-              },
-              beforeTest: function(e) {
-                report.innerHTML = 'Testing <strong>' + e.selector + 
-                  '</strong><br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
-              } 
-              });
+            stressTest(state);
             
         }
     }
