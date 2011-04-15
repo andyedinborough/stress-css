@@ -198,7 +198,7 @@ var stressTest = (function () {
           elms: indexElements(), results: {}, finish: null
         }, state);
         
-        var queue = Object_keys(state.elms),
+        var queue = state.queue = Object_keys(state.elms),
             testfinish = function (className, time) {
                 if (queue.length > 0 && !state.cancel) {
                     testSelector(queue.shift(), state, testfinish);
@@ -244,7 +244,7 @@ var stressTest = (function () {
                 '</td><td style="text-align:right; font:12px monospace">' + formatNumber(Math.abs(state.results[ii].delta)/state.times) + 'ms</td><td style="text-align:right; font:12px monospace">' + 
                 formatNumber(state.results[ii].time/state.times) + 'ms</td></tr>\n';
         });
-        log += '</table><hr/><table><tr><td style="text-align:right">Classes Tested:</td><td style="font:12px monospace">' + all.length + '</td></tr>' +
+        log += '</table><hr/><table><tr><td style="text-align:right">Selectors Tested:</td><td style="font:12px monospace">' + all.length + '</td></tr>' +
           '<tr><td style="text-align:right">Baseline Time:</td><td style="font:12px monospace">' + formatNumber(state.baseTime/state.times) + 'ms</td></tr>' +
           '<tr><td style="text-align:right">Num. Tests:</td><td style="font:12px monospace">' + state.times + '</td></tr>';
         
@@ -282,7 +282,7 @@ var stressTest = (function () {
                 },
                 beforeTest: function(e) {
                   report.innerHTML = 'Testing <strong>' + e.selector + 
-                    '</strong><br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
+                    '</strong><br/>' + this.queue.length + ' test remain<br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
                 } 
               };
             
