@@ -23,7 +23,7 @@ var stressTest = (function () {
       forEach.call(Object_keys(props), 
         function (ii) { 
           try { 
-            elm.style.setProperty(ii, props[ii]); 
+            elm.style[ii] = props[ii]; 
           } catch(x) { } 
         }
       );
