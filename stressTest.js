@@ -149,15 +149,14 @@ var stressTest = (function () {
     }
 
     function stress(state, times, finish) {
-        var  n = 0, now = +new Date;
-        work = function () {
-            window.scrollBy(0, n % 2 == 0 ? 100 : -100);
-        };
+        var now = +new Date,
+          work = function () {
+              window.scrollBy(0, times % 2 == 0 ? 100 : -100);
+          };
         times *= 2; //each test consists of scrolling down, and then back up
         
         bind(window, 'scroll.stressTest', function () {
-            n++;
-            if (n < times && !state.cancel) {
+            if (--times && !state.cancel) {
                 setTimeout(work, 0);
             } else {
                 unbind(window, 'scroll.stressTest');
