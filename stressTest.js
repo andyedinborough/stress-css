@@ -129,10 +129,11 @@ var stressTest = (function () {
       else if(which === '#') forEach.call(elms, function(elm){ elm.id = selector; });
     }
 
-    function testSelector(times, selector, state, finished) {
+    function testSelector(selector, state, finished) {
         var elms = state.elms[selector] || [];
         removeSelector(elms, selector);
-        stress(state, times, function (time) {
+        if(state.beforeTest) state.beforeTest({ elms: elms, selector: selector });
+        stress(state, state.times, function (time) {
             addSelector(elms, selector);
             if (selector == baselineName) {
                 state.baseTime = time;
@@ -142,7 +143,10 @@ var stressTest = (function () {
                     children: getChildren(elms).length,
                     time: time,
                     delta: time - state.baseTime
-                };
+                };                
+                if(state.afterTest) {
+                  state.afterTest({ elms: elms, selector: selector, result: state.results[selector] });
+                }
             }
             finished(selector, time);
         });
@@ -150,7 +154,7 @@ var stressTest = (function () {
 
     function stress(state, times, finish) {
         var now = +new Date,
-          work = function () {
+          work = state.work || function () {
               window.scrollBy(0, times % 2 == 0 ? 100 : -100);
           };
         times *= 2; //each test consists of scrolling down, and then back up
@@ -166,18 +170,29 @@ var stressTest = (function () {
 
         work();
     }
+    
+    function extend (a, b) { 
+      b = b || {};
+      forEach.call(Object_keys(a), function(key){
+        if(!b.hasOwnProperty(key))
+          b[key] = a[key];
+      });      
+      return b;
+    }
 
-    function stressTest(times, finish) {
-        if (!times) times = 100;
-
-        var state = { elms: indexElements(), results: {} },
-            queue = Object_keys(state.elms),
+    function stressTest(state) {
+        state = extend({ 
+          times: 5, beforeTest: null, afterTest: null,
+          elms: indexElements(), results: {}, finish: null
+        }, state);
+        
+        var queue = Object_keys(state.elms),
             testfinish = function (className, time) {
                 if (queue.length > 0 && !state.cancel) {
-                    testSelector(times, queue.shift(), state, testfinish);
+                    testSelector(queue.shift(), state, testfinish);
                 } else {
                     unbind(document, 'keydown.stressTest');
-                    if (finish && !state.cancel) finish(state);
+                    if (state.finish) state.finish();
                 }
             };
 
@@ -187,8 +202,8 @@ var stressTest = (function () {
 
         window.scrollTo(0, 0); //the first test scrolls down
         /* just warming up */
-        testSelector(times, baselineName, state, function () {
-            testSelector(times, baselineName, state, testfinish);
+        testSelector(baselineName, state, function () {
+            testSelector(baselineName, state, testfinish);
         });
     }
 
@@ -203,70 +218,87 @@ var stressTest = (function () {
       return parts[0] + (parts[1].length > 0 ? ('.' + parts[1]) : '');
     }
 
+    function showReport(state, report){ 
+        var log = '<table><thead><tr><th>Selector</th><th># Elms.</th><th># Child.</th><th> </th><th>Delta</th><th>Total</th></tr></thead>', 
+            all = Object_keys(state.results),
+            worst = all.sort(function (a, b) {
+                return state.results[a].time - state.results[b].time;
+            }).slice(0, 20);
+
+        forEach.call(worst, function (ii) {
+            log += '<tr><td>Removing <strong style="font:12px monospace">' + ii +
+                '</strong></td><td style="text-align:right; font:12px monospace">' + state.results[ii].length + '</td><td style="text-align:right; font:12px monospace">' + state.results[ii].children + 
+                '</td><td style="text-align:right">' + (state.results[ii].delta < 0 ? '<span style="color:red">saves</span>' : '<span style="color:green">adds</span>') +
+                '</td><td style="text-align:right; font:12px monospace">' + formatNumber(Math.abs(state.results[ii].delta)/state.times) + 'ms</td><td style="text-align:right; font:12px monospace">' + 
+                formatNumber(state.results[ii].time/state.times) + 'ms</td></tr>\n';
+        });
+        log += '</table><hr/><table><tr><td style="text-align:right">Classes Tested:</td><td style="font:12px monospace">' + all.length + '</td></tr>' +
+          '<tr><td style="text-align:right">Baseline Time:</td><td style="font:12px monospace">' + formatNumber(state.baseTime/state.times) + 'ms</td></tr>' +
+          '<tr><td style="text-align:right">Num. Tests:</td><td style="font:12px monospace">' + state.times + '</td></tr>';
+        
+        if(filter.call(all, function(cn){
+          return state.results[cn].time <= 15;
+        }).length) {
+          log += '<tr><td style="color:red; text-align:right;font-weight:bold">Warning:</td><td>Increase the number<br />of tests to get more<br />accurate results</td></tr>';
+        }
+                        
+        report.innerHTML = log + '</table>';
+        forEach.call(
+          report.getElementsByTagName('td'), 
+          function (td) { 
+            style(td, { padding: '1px', 'vertical-align': 'top' }); 
+          }
+        );                             
+    }
+
     stressTest.bookmarklet = function () {
         if(stressTest.report) stressTest.report.close();
         
         var num = prompt('How many tests would you like to run (# stress tests per selector)?', 5);
         if (num > 0) {
-            stressTest(num, function (state) {
-                var log = '<table><thead><tr><th>Selector</th><th># Elms.</th><th># Child.</th><th> </th><th>Delta</th><th>Total</th></tr></thead>', 
-                    report = document.createElement('div'),
-                    close = document.createElement('a'),
-                    all = Object_keys(state.results),
-                    worst = all.sort(function (a, b) {
-                        return state.results[a].time - state.results[b].time;
-                    }).slice(0, 20);
-
-                forEach.call(worst, function (ii) {
-                    log += '<tr><td>Removing <strong style="font:12px monospace">' + ii +
-                        '</strong></td><td style="text-align:right; font:12px monospace">' + state.results[ii].length + '</td><td style="text-align:right; font:12px monospace">' + state.results[ii].children + 
-                        '</td><td style="text-align:right">' + (state.results[ii].delta < 0 ? '<span style="color:red">saves</span>' : '<span style="color:green">adds</span>') +
-                        '</td><td style="text-align:right; font:12px monospace">' + formatNumber(Math.abs(state.results[ii].delta)/num) + 'ms</td><td style="text-align:right; font:12px monospace">' + 
-                        formatNumber(state.results[ii].time/num) + 'ms</td></tr>\n';
-                });
-                log += '</table><hr/><table><tr><td style="text-align:right">Classes Tested:</td><td style="font:12px monospace">' + all.length + '</td></tr>' +
-                  '<tr><td style="text-align:right">Baseline Time:</td><td style="font:12px monospace">' + formatNumber(state.baseTime/num) + 'ms</td></tr>' +
-                  '<tr><td style="text-align:right">Num. Tests:</td><td style="font:12px monospace">' + num + '</td></tr>';
-                
-                if(filter.call(all, function(cn){
-                  return state.results[cn].time <= 15;
-                }).length) {
-                  log += '<tr><td style="color:red; text-align:right;font-weight:bold">Warning:</td><td>Increase the number<br />of tests to get more<br />accurate results</td></tr>';
-                }
-                
-                style(report, { 
-                  position: 'fixed', top: '10px', right: '10px', 
-                  font: '12px Helvetica,Arials,sans-serif', 'z-index': 999999999, 
-                  background: 'white', padding: '2px', 
-                  border: 'solid 2px #777' 
-                });
-                                
-                report.innerHTML = log + '</table>';
-                forEach.call(
-                  report.getElementsByTagName('td'), 
-                  function (td) { 
-                    style(td, { padding: '1px', 'vertical-align': 'top' }); 
-                  }
-                );
-                
-                close.innerHTML = '&#215;';
-                style(close, { 
-                  position: 'absolute', top: 0, right: 0,
-                  'text-decoration': 'none', 'font-weight': 'bold',
-                  cursor: 'pointer', color: 'red', 
-                  'font-size': '1.3em', 'line-height': '8px' 
-                });
-                report.close = function(){
-                  report.parentNode.removeChild(report);
-                  unbind(close, 'click');
-                  stressTest.report = null;                             
-                };
-                bind(close, 'click', report.close);
-                
-                report.appendChild(close);
-                document.body.appendChild(report);   
-                stressTest.report = report;                             
+            var  reportHolder = document.createElement('div'),
+            report = document.createElement('div'),
+            close = document.createElement('a');
+            
+            style(reportHolder, { 
+              position: 'fixed', top: '10px', right: '10px', 
+              font: '12px Helvetica,Arials,sans-serif', 'z-index': 999999999, 
+              background: 'white', padding: '2px', 
+              border: 'solid 2px #777',
+              'min-width': '200px', 
             });
+            
+            close.innerHTML = '&#215;';
+            style(close, { 
+              position: 'absolute', top: 0, right: 0,
+              'text-decoration': 'none', 'font-weight': 'bold',
+              cursor: 'pointer', color: 'red', 
+              'font-size': '1.3em', 'line-height': '8px' 
+            });
+            reportHolder.close = function(){
+              reportHolder.parentNode.removeChild(reportHolder);
+              unbind(close, 'click');
+              stressTest.report = null;                             
+            };
+            bind(close, 'click', reportHolder.close);
+
+            reportHolder.appendChild(close);
+            reportHolder.appendChild(report);
+            document.body.appendChild(reportHolder);
+            stressTest.report = reportHolder;
+                        
+            stressTest({ 
+              times: num, 
+              finish: function(){ 
+                if(this.cancel) reportHolder.close();
+                else showReport(this, report); 
+              },
+              beforeTest: function(e) {
+                report.innerHTML = 'Testing <strong>' + e.selector + 
+                  '</strong><br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
+              } 
+              });
+            
         }
     }
 
