@@ -78,16 +78,16 @@ var stressTest = (function () {
 
     //var fid = 0;
     function bind(elm, name, func) {
-        var parts = name.split('.');
+        var parts = name.split('.'),
+          _func = !elm.attachEvent ? func : function(){ func.call(elm, window.event); };
         if (!elm.__events) elm.__events = {};
         if (!elm.__events[name]) elm.__events[name] = [];
         
-        if (elm.attachEvent) func = function(){ func.call(elm, window.event); }
         //if(!func.id) func.id = fid++;
         //log('binding',parts, func, func.id);
-        elm.__events[name].push(func);
-        if (elm.attachEvent) elm.attachEvent('on' + parts[0], func);
-        else if (elm.addEventListener) elm.addEventListener(parts[0], func, true);
+        elm.__events[name].push(_func);
+        if (elm.attachEvent) elm.attachEvent('on' + parts[0], _func);
+        else if (elm.addEventListener) elm.addEventListener(parts[0], _func, true);
     }
 
     function unbind(elm, name, func) {
