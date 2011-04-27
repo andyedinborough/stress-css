@@ -29,7 +29,9 @@ var stressTest = (function () {
       forEach.call(Object_keys(props), 
         function (ii) { 
           try { 
-            elm.style[ii] = props[ii]; 
+            var name = ii.replace(/\-([a-z])/ig, function(a, l){ return l.toUpperCase() });
+            var value = props[ii];
+            elm.style[name] = typeof value == 'number' && name != 'zIndex' ? (value + 'px') : value; 
           } catch(x) { } 
         }
       );
@@ -54,11 +56,12 @@ var stressTest = (function () {
         return ret;
     } 
 
-    function getChildren(elm) {
+    function getChildren(elm, tagName) {
+        if(!tagName) tagName = '*';
         if (typeof elm.length != 'undefined') {
             var all = []; //, ret = [], hash = {};
             forEach.call(elm, function (ii) {
-                forEach.call(getChildren(ii), function(ce){ 
+                forEach.call(getChildren(ii, tagName), function(ce){ 
                   all.push(ce);
                 });
             });
@@ -66,7 +69,20 @@ var stressTest = (function () {
             //need a way to make sure the list is distinct
             return all; //ret;
         }
-        return elm.all ? elm.all : elm.getElementsByTagName("*");
+        
+        var tags = tagName.split(' ');
+        if(tags.length > 1){
+          var all = [];
+          forEach.call(tags, function (ii) {
+            forEach.call(getChildren(elm, ii), function(ce){ 
+              all.push(ce);
+            });
+          });
+          
+          return all;
+        } 
+        
+        return elm.all && tagName == '*' ? elm.all : elm.getElementsByTagName(tagName);
     }
     
     /*var l = 0;
@@ -208,10 +224,10 @@ var stressTest = (function () {
         work();
     }
     
-    function extend (a, b) { 
+    function extend (a, b, copy) { 
       b = b || {};
       forEach.call(Object_keys(a), function(key){
-        if(!b.hasOwnProperty(key))
+        if(copy || !b.hasOwnProperty(key))
           b[key] = a[key];
       });      
       return b;
@@ -290,13 +306,12 @@ var stressTest = (function () {
                         
         report.innerHTML = log + '</table>';
         forEach.call(
-          report.getElementsByTagName('td'), 
+          getChildren(report, 'td th'), 
           function (td) { 
-            style(td, { padding: '1px', 'vertical-align': 'top' }); 
+            style(td, { padding: 1, 'vertical-align': 'top', 'white-space': 'nowrap', 'font-size': 12 }); 
           }
         );                             
     }
-
 
     stressTest.bind = bind;
     stressTest.unbind = unbind;
@@ -305,9 +320,20 @@ var stressTest = (function () {
         
         //var num = prompt('How many tests would you like to run (# stress tests per selector)?', 5);
         //if (num > 0) {
-            var  reportHolder = document.createElement('div'),
-              report = document.createElement('div'),
-              close = document.createElement('a'), 
+            var  reportHolder = document.createElement('iframe'),
+            block = document.createElement('iframe');
+            extend({  
+              //name: 'report' + Math.random().toString().substr(2),
+              scrolling: 'no',
+              frameBorder: 'no'
+            }, reportHolder, true);
+            document.body.appendChild(reportHolder);
+            reportHolder.doc = reportHolder.contentDocument || reportHolder.contentWindow.document;
+            reportHolder.doc.write('<html><head></head><body></body></html>');
+            reportHolder.doc.close();
+            
+            var report = reportHolder.doc.createElement('div'),
+              close = reportHolder.doc.createElement('a'), 
               state = { 
                 //times: num, 
                 finish: function(){ 
@@ -317,32 +343,46 @@ var stressTest = (function () {
                 beforeTest: function(e) {
                   var l = this.queue.length;
                   report.innerHTML = 'Testing <strong>' + e.selector + 
-                    '</strong><br/>' + l + ' test' + (l===1?'':'s') + ' remain<br/><span style="font-size:0.9em">Press <code>ESC</code> to quit</span>';
+                    '</strong><br/>' + l + ' test' + (l===1?'':'s') + ' remain';
                 },
                 all: getChildren(document)
-              };
+              };              
               
+            reportHolder.resize = function(){ 
+              var body = reportHolder.doc.body; 
+              style(reportHolder, {
+                width: body.scrollWidth, 
+                height: body.scrollHeight
+              });
+            }  
+            setInterval(reportHolder.resize, 100);
+            
             var zIndex = 0;
             forEach.call(state.all, function(elm){
               var z = parseInt(elm.style.zIndex, 10);
               if(!isNaN(z) && z > zIndex) zIndex = z;
-            }); 
+            });  
             
             style(reportHolder, { 
-              position: 'fixed', top: '10px', right: '10px', 
-              font: '12px Helvetica,Arials,sans-serif', 'z-index': zIndex + 100, 
-              background: 'white', padding: '2px', 
-              border: 'solid 2px #777',
-              'min-width': '200px', 
+              position: 'fixed', top: 10, right: 10, 
+              zIndex: zIndex + 99999, 
+              background: 'white', padding: 2, 
+              border: 'solid 2px #aaa',
+              width: 200, height: 40,
+              borderRadius: 4, boxShadow: '0 0 8px #eee'
+            });
+            style(reportHolder.doc.body, {
+              'font': '12px Helvetica,Arials,sans-serif', 
               color: '#444'
             });
+            style(report, { 'white-space': 'nowrap' });
             
             close.innerHTML = '&#215;';
             style(close, { 
               position: 'absolute', top: 0, right: 0,
               'text-decoration': 'none', 'font-weight': 'bold',
               cursor: 'pointer', color: 'red', 
-              'font-size': '1.3em', 'line-height': '8px' 
+              'font-size': '1.3em', 'line-height': 8
             });
             reportHolder.close = function(){
               reportHolder.parentNode.removeChild(reportHolder);
@@ -352,9 +392,8 @@ var stressTest = (function () {
             };
             bind(close, 'click', reportHolder.close);
 
-            reportHolder.appendChild(close);
-            reportHolder.appendChild(report);
-            document.body.appendChild(reportHolder);
+            reportHolder.doc.body.appendChild(close);
+            reportHolder.doc.body.appendChild(report);
             stressTest.report = reportHolder;
                         
             stressTest(state);
