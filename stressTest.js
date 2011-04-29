@@ -242,17 +242,12 @@ var stressTest = (function () {
         //the first test scrolls down
         window.scrollTo(0, 0);
         
-        //make sure there's enough room to scroll
-        var margin0 = document.body.style.marginBottom;
-        document.body.style.marginBottom = window.screen.height + 'px'; 
-                
         var queue = state.queue = Object_keys(state.elms),
             testfinish = function (className, time) {
                 if (queue.length > 0 && !state.cancel) {
                     testSelector(queue.shift(), state, testfinish);
                 } else {
                     unbind(document, 'keydown.stressTest');
-                    document.body.style.marginBottom = margin0 || '0px';
                     if (state.finish) state.finish();
                 }
             };
@@ -308,7 +303,12 @@ var stressTest = (function () {
         forEach.call(
           getChildren(report, 'td th'), 
           function (td) { 
-            style(td, { padding: 1, 'vertical-align': 'top', 'white-space': 'nowrap', 'font-size': 12 }); 
+            style(td, { 
+              padding: 1, 
+              verticalAlign: 'top', 
+              whiteSpace: 'nowrap', 
+              fontSize: 12 
+            }); 
           }
         );                             
     }
@@ -362,10 +362,10 @@ var stressTest = (function () {
               var z = parseInt(elm.style.zIndex, 10);
               if(!isNaN(z) && z > zIndex) zIndex = z;
             });  
-            
+            zIndex += 99999;
             style(reportHolder, { 
               position: 'fixed', top: 10, right: 10, 
-              zIndex: zIndex + 99999, 
+              zIndex: zIndex, 
               background: 'white', padding: 2, 
               border: 'solid 2px #aaa',
               width: 200, height: 40,
@@ -375,23 +375,33 @@ var stressTest = (function () {
               'font': '12px Helvetica,Arials,sans-serif', 
               color: '#444'
             });
-            style(report, { 'white-space': 'nowrap' });
+            style(report, { whiteSpace: 'nowrap' });
             
             close.innerHTML = '&#215;';
             style(close, { 
               position: 'absolute', top: 0, right: 0,
-              'text-decoration': 'none', 'font-weight': 'bold',
+              textDecoration: 'none', fontWeight: 'bold',
               cursor: 'pointer', color: 'red', 
-              'font-size': '1.3em', 'line-height': 8
+              fontSize: '1.3em', lineHeight: 8 
             });
             reportHolder.close = function(){
               reportHolder.parentNode.removeChild(reportHolder);
+              block.parentNode.removeChild(block);
               unbind(close, 'click');
               stressTest.report = null; 
               state.cancel = true;                            
             };
             bind(close, 'click', reportHolder.close);
 
+            style(block, { 
+              height: window.screen.height * 2, 
+              width: window.screen.width,
+              position: 'absolute', top: 0, left: 0,
+              visible: 'hidden',
+              zIndex: zIndex - 1
+            });
+            document.body.appendChild(block);
+            
             reportHolder.doc.body.appendChild(close);
             reportHolder.doc.body.appendChild(report);
             stressTest.report = reportHolder;
