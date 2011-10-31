@@ -1,0 +1,12 @@
+@import url(http://www.example.org/styles/adv-style.css) print;
+
+@media screen {
+  h1 {border-bottom: 2px solid gray; margin-bottom: 0.25em;}
+  a:link, a:visited {background: #FF9; font-weight: bold;}
+  a:link {color: blue;}
+  a:visited {color: purple;}
+}
+
+@media print {
+  body { background: white; }
+}

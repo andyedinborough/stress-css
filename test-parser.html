@@ -3,12 +3,18 @@
 <head>
   <script src="reader.js"></script>
   <script src="parseCSS.js"></script>
-  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <head>
 <body>
   <script>
-        var sheet = parseCSS(' test /*test*/ { color: red; }' );
-        console.log(sheet);
+    var sheet;
+      $.get('test.css')
+        .success(function(txt){
+          sheet = parseCSS(txt);  
+          console.log(sheet, sheet.media.print);
+          $('<pre/>').html(sheet.toString()).appendTo('body');
+        });     
+
   </script>
   
 

@@ -12,6 +12,13 @@ var Reader = function(){
     this.position = Math.min(this.length, this.position + (len || 1));
     return value;
   };
+  
+  reader.prototype.readAll = function(){
+    if(this.position>=this.length) return undefined;
+    var value = this.text.substr(this.position + 1);
+    this.position = this.length;
+    return value;
+  };
     
   reader.prototype.peek = function(len){
     if((this.position+1)>=this.length) return undefined;

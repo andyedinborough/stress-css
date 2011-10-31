@@ -8,23 +8,30 @@ function minify-js($js) {
 }
 
 function build-parser() {
-    $parseCSS = [System.IO.File]::ReadAllText((absolute-ref("parseCSS.js")))
-    $reader = [System.IO.File]::ReadAllText((absolute-ref("reader.js")))
+    $parseCSS = read-text parseCSS.js
+    $reader = read-text reader.js
     
     $all = "var parseCSS = (function(){ 
         $reader
         $parseCSS 
         return parseCSS; 
-})();";
+})();"
 
-    $allmin = minify-js($all)
-    
-    [System.IO.File]::WriteAllText((absolute-ref("bin\\parseCSS.js")), $all)
-    [System.IO.File]::WriteAllText((absolute-ref("bin\\parseCSS.min.js")), $allmin)
+    write-text bin\\parseCSS.js $all
+    $allmin = minify-js $all   
+    write-text bin\\parseCSS.min.js $allmin
 }
 
-function absolute-ref ($file) {
-    return [System.IO.Path]::Combine([System.Environment]::CurrentDirectory, $file)
+function read-text ($fn){
+    return [System.IO.File]::ReadAllText((absolute-ref $fn))
+}
+
+function write-text ($fn, $text){
+    [System.IO.File]::WriteAllText((absolute-ref $fn), $text)
+}
+
+function absolute-ref ($fn) {
+    return [System.IO.Path]::Combine([System.Environment]::CurrentDirectory, $fn)
 }
 
 build-parser
