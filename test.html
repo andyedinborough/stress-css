@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /*  comment!
+        body */
+        body {
+            font-family: arial, calibri, sans-serif; 
+            font-size: 12px;
+            content: '}';
+        }
+        
+        p {
+          content: '}';
+        }
+    </style> 
+
+    <link href="jqtransform.css" rel="Stylesheet" />
+</head>
+<body>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.js"></script>
+    <script>
+        $(function () {
+            getAllSelectors(function (selectors) {
+                var sels = [];
+                $.each(selectors, function (i, ii) { sels.push(ii.selector); });
+                $('body').append('<code>' + sels.join('<br/>') + '</code>');
+            });
+        });
+
+        function getAllSelectors(finish) {
+            var all = [], hrefs = [];
+
+            $('style').each(function () {
+                var sels = getSelectors($(this).text());
+                all.push.apply(all, sels);
+                hrefs.push.apply(hrefs, sels.imports);
+            });
+
+            hrefs.push.apply(hrefs, $('link').filter(function () {
+                return ($(this).attr('rel') || '').toLowerCase() == 'stylesheet';
+            }).map(function () {
+                return $.get($(this).attr('href'));
+            }).get());
+
+            if (hrefs.length > 0) {
+                download(hrefs, finish);                                  
+            } else finish(distinct(all));
+        }
+
+        var downloaded = {}
+        function download(hrefs, finish) {
+            var queue = [], all = [];
+            $.each(hrefs, function (i, href) {
+                if (downloaded[href]) return;
+                downloaded[href] = true;
+                queue.push(href);
+            });
+
+            $.when.apply($, queue).done(function () {
+                queue = [];
+                $.each(hrefs.length === 1 ? [arguments] : arguments, function (i, resultarr) {
+                    var sels = getSelectors(resultarr[0]);
+                    all.push.apply(all, sels.rules);
+                    queue.push.apply(queue, sels.imports);
+                });
+
+                if (queue.length > 0)
+                    download(queue, finish);
+                else finish(distinct(all));
+            });
+        }
+
+        function distinct(arr) {
+            var hash = {};
+            $.each(arr, function (i, ii) { hash[ii.selector] = (hash[ii.selector] || '' ) + ii.body  ; });
+            arr = [];
+            for (var i in hash) if (hash.hasOwnProperty(i)) arr.push({ selector: i, body: hash[i] });
+            return arr;
+        }
+
+        function check(bit, num){
+          return (bit & num) == num;
+      }
+
+      function endsWith(txt, char) {
+        if(!txt) return '';
+        if (txt[txt.length - 1] === char) return txt;
+        return txt + char;
+      }
+
+      var modes = {
+          selector: 1, body: 2, qs: 4, qd: 8, media: 16, import: 32
+      };
+
+      function getSelectors(text, media) {
+          media = media || 'screen';
+          text = text.replace(/[\r\n\s]+/g, ' ').replace(/\/\*.+?\*\//g, '');
+          var c, mode = 1, rule = { selector: '', body: '' }, rules = [], imports = [];
+
+          for (var i = 0, ii = text.length; i < ii; i++) {
+              c = text[i];
+
+              if (check(mode, modes.qd)) {
+                  if (c === '"') {
+                      mode -= modes.qd;
+                  }
+              } else if (check(mode, modes.qs)) {
+                  if (c === "'") {
+                      mode -= modes.qs;
+                  }
+
+              } else {
+                  if (c === '"') mode |= modes.qd;
+                  else if (c === "'") mode |= modes.qs;
+                  else if (c === ';' && rule.selector.indexOf('@import') > -1) {
+                      var url = rule.selector.match(/url\s*\((.*)\)/gi)[0];
+                      imports.push(url);
+                      rule.selector = '';
+                  } else if (c === '{' && check(mode, modes.selector)) {
+                      c = '';
+                      mode = modes.body;
+                  } else if (c === '}' && check(mode, modes.body)) {
+                      c = '';
+                      mode = modes.selector;
+                      rule.selector = $.trim(rule.selector);
+                      rule.body = endsWith($.trim(rule.body), ';');
+                      if (rule.selector && rule.body && rule.selector.indexOf('@import') !== 0 && rule.selector.indexOf('@media') !== 0)
+                          rules.push($.extend({}, rule));
+                      rule.selector = rule.body = '';
+                  }
+              }
+
+              if (c) {
+                  rule[check(mode, modes.selector) ? 'selector' : 'body'] += c;
+              }
+
+          }
+          return { rules: rules, imports: imports };
+      }
+        
+    </script>
+</body>
+</html>
