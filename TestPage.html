@@ -1,45 +1,45 @@
-<!DOCTYPE html> 
-<html> 
-  <head> 
-    <meta charset='utf-8'> 
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
     <style>
       html {
         overflow-y: scroll;
-      } 
-      
+      }
+
       body {
         font: 12px Helvetica, Arial, sans-serif;
       }
-      
+
       #btnRun {
         font-size: 2em;
       }
-    
+
       .box {
         width: 300px;
         height: 100px;
-        margin: 1em;         
+        margin: 1em;
         background: grey;
-      } 
-      
-      .box1 { 
+      }
+
+      .box1 {
         border-radius: 20px;
-        -moz-border-radius: 20px; 
-      } 
-      
-      .box2 { 
+        -moz-border-radius: 20px;
+      }
+
+      .box2 {
         box-shadow: 0 0 20px yellow;
-        -moz-box-shadow: 0 0 20px yellow; 
-      } 
-      
+        -moz-box-shadow: 0 0 20px yellow;
+      }
+
       .box3 {
         -moz-transform: rotate(20deg);
         -webkit-transform: rotate(20deg);
         -o-transform: rotate(20deg);
         -ms-transform: rotate(20deg);
         transform: rotate(20deg);
-      } 
-      
+      }
+
       .box4 {
         background-image: -ms-radial-gradient(center, ellipse contain, #FFFFFF 0%, #00A3EF 100%);
         background-image: -moz-radial-gradient(center, ellipse contain, #FFFFFF 0%, #00A3EF 100%);
@@ -47,20 +47,20 @@
         background-image: -webkit-gradient(radial, center center, 0, center center, 143, color-stop(0, #FFFFFF), color-stop(1, #00A3EF));
         background-image: -webkit-radial-gradient(center, ellipse contain, #FFFFFF 0%, #00A3EF 100%);
         background-image: radial-gradient(center, ellipse contain, #FFFFFF 0%, #00A3EF 100%);
-      }    
-      
-      
-		.stripes {   			
+      }
+
+
+		.stripes {
 			-webkit-background-size: 50px 50px;
 			-moz-background-size: 50px 50px;
 			-ms-background-size: 50px 50px;
 			background-size: 50px 50px; /* Controls the size of the stripes */
-			
+
 			-moz-box-shadow: 1px 1px 8px gray;
 			-webkit-box-shadow: 1px 1px 8px gray;
 			box-shadow: 1px 1px 8px gray;
 		}
-		
+
 		.angled {
 			background-color: #ac0;
 			background-image: -webkit-gradient(linear, 0 100%, 100% 0,
@@ -81,7 +81,7 @@
 								transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
 								transparent 75%, transparent);
 		}
-		
+
 		.angled-135 {
 			background-color: #c16;
 			background-image: -webkit-gradient(linear, 0 0, 100% 100%,
@@ -102,7 +102,7 @@
 								transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
 								transparent 75%, transparent);
 		}
-		
+
 		.horizontal {
 			background-color: #0ae;
 			background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(.5, rgba(255, 255, 255, .2)), color-stop(.5, transparent), to(transparent));
@@ -111,7 +111,7 @@
 			background-image: -ms-linear-gradient(rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
 			background-image: linear-gradient(rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
 		}
-		
+
 		.vertical {
 			background-color: #f90;
 			background-image: -webkit-gradient(linear, 0 0, 100% 0, color-stop(.5, rgba(255, 255, 255, .2)), color-stop(.5, transparent), to(transparent));
@@ -120,7 +120,7 @@
 			background-image: -ms-linear-gradient(0deg, rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
 			background-image: linear-gradient(0deg, rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
 		}
-		
+
 		.checkered {
 			background-image: -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #555), color-stop(.25, transparent), to(transparent)),
 							  -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #555), color-stop(.25, transparent), to(transparent)),
@@ -143,7 +143,7 @@
 							  linear-gradient(45deg, transparent 75%, #555 75%),
 			  				  linear-gradient(-45deg, transparent 75%, #555 75%);
 		}
-		
+
 		.picnic {
 			background-color:white;
 			background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(.5, transparent), color-stop(.5, rgba(200, 0, 0, .5)), to(rgba(200, 0, 0, .5))),
@@ -157,26 +157,27 @@
 			background-image: linear-gradient(transparent 50%, rgba(200, 0, 0, .5) 50%, rgba(200, 0, 0, .5)),
 					    linear-gradient(0deg, transparent 50%, rgba(200, 0, 0, .5) 50%, rgba(200, 0, 0, .5));
 		}
-    
+
     </style>
   </head>
   <body>
     <button id="btnRun">Run Test</button>
-    
+
     <div id="tests">
       <div class="box box1"> </div>
       <div class="box box2"> </div>
       <div class="box box3"> </div>
-      <div class="box box4"> </div> 
-      
-      <div class="box horizontal stripes"></div> 
-      <div class="box vertical stripes"></div> 
-      <div class="box picnic stripes"></div> 
-      <div class="box angled stripes"></div> 
-      <div class="box angled-135 stripes"></div> 
-      <div class="box checkered stripes"></div> 
+      <div class="box box4"> </div>
+
+      <div class="box horizontal stripes"></div>
+      <div class="box vertical stripes"></div>
+      <div class="box picnic stripes"></div>
+      <div class="box angled stripes"></div>
+      <div class="box angled-135 stripes"></div>
+      <div class="box checkered stripes"></div>
+      <svg>foo bar</svg>
     </div>
-    
+
     <script src="stressTest.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <script>
