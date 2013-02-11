@@ -1,0 +1,13 @@
+{
+  "title": "stress-css",
+  "name": "stress-css",
+  "description": "Stress test your CSS",
+  "version": "0.1.0",
+  "author": {
+    "name":"Andy Edinborough (@andyedinborough)"
+  },
+  "homepage": "https://github.com/andyedinborough/stress-css",
+  "licenses": [{
+    "type": "MIT"
+  }]
+}

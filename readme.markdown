@@ -7,3 +7,7 @@ removes one, and times how long it takes to scroll the page.  Selectors that
 save a considerable amount of time when removed indicate problem areas.
 
 To install the bookmarklet, visit my blog post on this project: <http://andy.edinborough.org/CSS-Stress-Testing-and-Performance-Profiling>
+
+License
+-------
+http://andyedinborough.mit-license.org/
